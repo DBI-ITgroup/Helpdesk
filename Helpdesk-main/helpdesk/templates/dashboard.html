@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block sidebar %}
+    <nav class="dashboard-menu">
+        <ul>
+            <li>
+                <a href="#" id="add-ticket-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                    </svg>
+                    Add a Ticket
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'my_tickets' %}">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 6h18M3 12h18m-9 6h9" />
+                    </svg>
+                    My Tickets
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'settings' %}">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v18m-6-6h12m-6-6h6" />
+                    </svg>
+                    Settings
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'logout' %}">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12h3m-3 0l-3-3m3 3l-3 3m3-3H6" />
+                    </svg>
+                    Logout
+                </a>
+            </li>
+        </ul>
+    </nav>
+{% endblock %}
+
+{% block content %}
+    <h1>Welcome to the Dashboard</h1>
+    <p>Hello, {{ user.username }}! You are logged in.</p>
+
+    <!-- Display Success Messages -->
+    {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+                <p class="message {{ message.tags }}">{{ message }}</p>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Ticket Form (Hidden by Default) -->
+    <div id="ticket-form-container" style="display: none;">
+        <h2>Add a New Ticket</h2>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">Submit Ticket</button>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById("add-ticket-btn").addEventListener("click", function(event) {
+            event.preventDefault();
+            document.getElementById("ticket-form-container").style.display = "block";
+        });
+    </script>
+{% endblock %}
