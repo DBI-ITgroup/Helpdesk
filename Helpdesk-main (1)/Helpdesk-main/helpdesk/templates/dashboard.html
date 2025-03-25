@@ -14,7 +14,7 @@
                 </a>
             </li>
             <li>
-                <a href="{% url 'my_tickets' %}">
+                <a href="#" id="my-tickets-btn">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M3 6h18M3 12h18m-9 6h9" />
                     </svg>
@@ -57,10 +57,53 @@
     <!-- Ticket Form (Hidden by Default) -->
     <div id="ticket-form-container" style="display: none;">
         <h2>Add a New Ticket</h2>
-        <form method="post" enctype="multipart/form-data">
+        <form method="post" action="{% url 'add_ticket' %}" enctype="multipart/form-data">
             {% csrf_token %}
             {{ form.as_p }}
             <button type="submit">Submit Ticket</button>
+        </form>
+    </div>
+
+    <!-- My Tickets Section (Hidden by Default) -->
+    <div id="my-tickets-container" style="display: none;">
+        <h2>My Tickets</h2>
+        {% if tickets %}
+            <table border="1">
+                <thead>
+                    <tr>
+                        <th>Ticket Number</th>
+                        <th>Title</th>
+                        <th>Department</th>
+                        <th>Priority</th>
+                        <th>Status</th>
+                        <th>Date Created</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ticket in tickets %}
+                        <tr>
+                            <td>{{ ticket.ticket_number }}</td>
+                            <td>{{ ticket.ticket_title }}</td>
+                            <td>{{ ticket.department }}</td>
+                            <td>{{ ticket.priority_level }}</td>
+                            <td><strong>{{ ticket.status }}</strong></td>
+                            <td>{{ ticket.date_created_on|date:"M d, Y H:i A" }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>No tickets found.</p>
+        {% endif %}
+    </div>
+
+    <!-- Profile Update Section (Hidden by Default) -->
+    <div id="profile-update-container" style="display: block;">
+        <h2>Update Your Profile</h2>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">Update Profile</button>
         </form>
     </div>
 
@@ -68,6 +111,22 @@
         document.getElementById("add-ticket-btn").addEventListener("click", function(event) {
             event.preventDefault();
             document.getElementById("ticket-form-container").style.display = "block";
+            document.getElementById("my-tickets-container").style.display = "none";
+            document.getElementById("profile-update-container").style.display = "none";
+        });
+
+        document.getElementById("my-tickets-btn").addEventListener("click", function(event) {
+            event.preventDefault();
+            document.getElementById("ticket-form-container").style.display = "none";
+            document.getElementById("my-tickets-container").style.display = "block";
+            document.getElementById("profile-update-container").style.display = "none";
+        });
+
+        document.getElementById("settings-btn").addEventListener("click", function(event) {
+            event.preventDefault();
+            document.getElementById("profile-update-container").style.display = "block";
+            document.getElementById("ticket-form-container").style.display = "none";
+            document.getElementById("my-tickets-container").style.display = "none";
         });
     </script>
 {% endblock %}
