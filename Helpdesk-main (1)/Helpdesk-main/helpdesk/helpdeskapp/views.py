@@ -18,14 +18,7 @@ def register(request):
     if request.method == "POST":
         form = CustomUserRegistrationForm(request.POST)
         if form.is_valid():
-            full_name = form.cleaned_data["full_name"]
-            email = form.cleaned_data["email"]
-            password = form.cleaned_data["password"]
-
-            user = CustomUser.objects.create_user(username=email, email=email, password=password)
-            user.first_name = full_name
-            user.save()
-
+            user = form.save()  
             messages.success(request, "Registration successful! You can now log in.")
             return redirect("login")  
     else:
