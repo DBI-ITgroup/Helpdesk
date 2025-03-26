@@ -1,18 +1,26 @@
 from django import forms
-from django.contrib.auth.models import User
-from .models import Ticket
-from .models import UserProfile
-
+from .models import Ticket, CustomUser
 
 class CustomUserRegistrationForm(forms.Form):
+    ROLE_CHOICES = [
+        ('End-User', 'End-User'),
+        ('Technician', 'Technician'),
+        ('Administrator', 'Administrator'),
+    ]
+    
     full_name = forms.CharField(max_length=50, required=True, widget=forms.TextInput(attrs={'placeholder': 'Full Name'}))
     email = forms.EmailField(required=True, widget=forms.EmailInput(attrs={'placeholder': 'Email Address'}))
     password = forms.CharField(widget=forms.PasswordInput(attrs={'placeholder': 'Password'}), required=True)
     confirm_password = forms.CharField(widget=forms.PasswordInput(attrs={'placeholder': 'Confirm Password'}), required=True)
+    role = forms.ChoiceField(choices = ROLE_CHOICES, required = True, widget = forms.Select(attrs = {'class': 'form-control'}))
+    
+    class Meta:
+        model = CustomUser
+        fields = ['full_name', 'email', 'password', 'role']
 
     def clean_email(self):
         email = self.cleaned_data['email']
-        if User.objects.filter(username=email).exists():
+        if CustomUser.objects.filter(username=email).exists():
             raise forms.ValidationError("Email Already Exists")
         return email 
     
@@ -43,12 +51,12 @@ class UserProfileUpdateForm(forms.ModelForm):
     confirm_password = forms.CharField(widget=forms.PasswordInput(attrs={'placeholder': 'Confirm New Password'}), required=False)
 
     class Meta:
-        model = User
+        model = CustomUser
         fields = ['full_name', 'email']
 
     def clean_email(self):
         email = self.cleaned_data['email']
-        if User.objects.filter(email=email).exclude(pk=self.instance.pk).exists():
+        if CustomUser.objects.filter(email=email).exclude(pk=self.instance.pk).exists():
             raise forms.ValidationError("Email already exists!")
         return email
 
@@ -61,8 +69,3 @@ class UserProfileUpdateForm(forms.ModelForm):
             if password != confirm_password:
                 self.add_error('confirm_password', "Passwords do not match!")
         return cleaned_data
-    
-class UserProfileForm(forms.ModelForm):
-    class Meta:
-        model = UserProfile
-        fields = ['fullname', 'contact_info', 'contact_method']

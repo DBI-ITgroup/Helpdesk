@@ -1,14 +1,13 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from .models import Ticket
+from .models import Ticket, CustomUser
 from .forms import CustomUserRegistrationForm, CustomLoginForm, TicketForm
 import uuid
-from .forms import UserProfileForm
 
-
+User = get_user_model
 
 def home(request):
     form = CustomLoginForm()
@@ -23,7 +22,7 @@ def register(request):
             email = form.cleaned_data["email"]
             password = form.cleaned_data["password"]
 
-            user = User.objects.create_user(username=email, email=email, password=password)
+            user = CustomUser.objects.create_user(username=email, email=email, password=password)
             user.first_name = full_name
             user.save()
 
@@ -94,25 +93,6 @@ def my_tickets(request):
     tickets = Ticket.objects.filter(user=request.user)  # Get tickets of logged-in user
     return render(request, 'my_tickets.html', {'tickets': tickets})
 
-
-@login_required
-def settings(request):
-    # Get the user's profile (or create it if it doesn't exist)
-    user_profile = request.user.userprofile
-
-    if request.method == 'POST':
-        form = UserProfileForm(request.POST, instance=user_profile)
-        if form.is_valid():
-            form.save()
-            return redirect('dashboard')  # Redirect to the dashboard after saving
-
-    else:
-        form = UserProfileForm(instance=user_profile)
-
-    # Fetch the user's tickets
-    tickets = request.user.ticket_set.all()
-
-    return render(request, 'dashboard.html', {'form': form, 'tickets': tickets})
 
 def user_logout(request):
     logout(request)  # Properly log out the user
