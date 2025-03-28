@@ -51,7 +51,7 @@ class Ticket(models.Model):
         ('Finance', 'Finance'),
     ]
 
-    ticket_id = models.AutoField(primary_key=True)
+    id = models.AutoField(primary_key=True)
     ticket_number = models.CharField(max_length=20, unique=True, blank=True)
     ticket_title = models.CharField(max_length=255)
     department = models.CharField(max_length=100, choices=DEPARTMENT_CHOICES)
@@ -100,4 +100,4 @@ class Ticket(models.Model):
 
     def __str__(self):
         assigned_to = self.assigned_technician.full_name if self.assigned_technician else "Unassigned"
-        return f"{self.ticket_number} - {self.ticket_title} (Assigned to: {assigned_to})"
+        return f"{self.ticket_number} - {self.ticket_title} (Assigned to: {assigned_to}) {self.id}"

@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect,get_object_or_404
 from django.contrib.auth import get_user_model
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
@@ -41,11 +41,13 @@ def user_login(request):
                 login(request, user)
                 messages.success(request, "Login Successful!")
                 
-                # Redirect based on role
-                if user.role and user.role.lower() != "end-user":  
-                    return redirect("admin_dashboard")  # Change to the correct admin page URL name
+                # Redirect based on the role
+                if user.role == "End-User":
+                    return redirect("dashboard")  # End-users go to their dashboard
+                elif user.role == "L1_Technician" or user.role == "L2_Technician":
+                    return redirect("technician_dashboard")  # Redirect L1/L2 Technicians to their dashboard
                 else:
-                    return redirect("dashboard")  
+                    return redirect("admin_dashboard")  # Admin users go to the admin dashboard
 
             else: 
                 messages.error(request, "Invalid email or password!")
@@ -54,6 +56,7 @@ def user_login(request):
         form = CustomLoginForm()
             
     return render(request, "login.html", {"form": form})
+
 
 @login_required
 def dashboard(request):
@@ -123,37 +126,52 @@ def admin_dashboard(request):
 def view_tickets(request):
     if request.user.is_authenticated:
         if request.user.role == "L1_Technician":
+            # Make sure to return a template for the L1 technician's dashboard
             tickets = Ticket.objects.filter(status="Pending", assigned_technician=request.user)
+            return render(request, "technician_dashboard.html", {"tickets": tickets})
         elif request.user.role == "L2_Technician":
             tickets = Ticket.objects.filter(status="Completed")
+            return render(request, "technician_dashboard.html", {"tickets": tickets})
         else:
             tickets = Ticket.objects.all()  # Show all tickets for admins
-        
-        return render(request, "admin.html", {"tickets": tickets})
+            return render(request, "admin.html", {"tickets": tickets})
 
     return redirect("login")
 
-def create_ticket(request):
-    if request.method == "POST":
-        ticket_title = request.POST.get("ticket_title")
-        problem_description = request.POST.get("problem_description")
-        priority_level = request.POST.get("priority_level")
-        department = request.POST.get("department")
+@login_required
+def technician_dashboard(request):
+    tickets = Ticket.objects.filter(assigned_technician=request.user, status="Pending")
 
-        assigned_technician = get_least_busy_l1_technician()
+    if request.user.role == "L1_Technician":
+        tickets = Ticket.objects.filter(assigned_technician=request.user)
+    else:
+        messages.error(request, "Unauthorized access!")
+        return redirect("dashboard")
 
-        ticket = Ticket.objects.create(
-            ticket_title=ticket_title,
-            department=department,
-            contact_info=request.user.email,
-            problem_description=problem_description,
-            priority_level=priority_level,
-            preferred_contact_method="Email",
-            user=request.user,
-            status="Pending",
-            assigned_technician=assigned_technician if assigned_technician else None
-        )
+    return render(request, "technician_dashboard.html", {"tickets": tickets})
 
-        return redirect("view_tickets")
 
-    return render(request, "admin.html")
+@login_required
+def accept_ticket(request, id):
+    ticket = get_object_or_404(Ticket, id=id)
+    ticket.status = "In Progress"
+    ticket.save()
+    return redirect("technician_dashboard")
+
+def request_info(request, id):
+    ticket = get_object_or_404(Ticket,id=id)
+    ticket.status = "Waiting for Info"
+    ticket.save()
+    return redirect("technician_dashboard")
+
+def escalate_ticket(request,id):
+    ticket = get_object_or_404(Ticket, id=id)
+    ticket.status = "Escalated"
+    ticket.save()
+    return redirect("technician_dashboard")
+
+def complete_ticket(request, id):
+    ticket = get_object_or_404(Ticket, id=id)
+    ticket.status = "Completed"
+    ticket.save()
+    return redirect("technician_dashboard")

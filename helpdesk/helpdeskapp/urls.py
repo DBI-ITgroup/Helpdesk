@@ -11,4 +11,11 @@ urlpatterns = [
     path('logout/', views.user_logout, name='logout'),  # User logout
     path("admin-dashboard/", views.admin_dashboard, name="admin_dashboard"),  # Admin dashboard
     path('tickets/', views.view_tickets, name='view_tickets'),  # View all tickets
+    path("technician-dashboard/", views.technician_dashboard, name="technician_dashboard"),  # Technician dashboard
+
+     # Ticket action URLs
+    path('ticket/<int:id>/accept/', views.accept_ticket, name='accept_ticket'),
+    path('ticket/<int:id>/request-info/', views.request_info, name='request_info'),
+    path('ticket/<int:id>/escalate/', views.escalate_ticket, name='escalate_ticket'),
+    path('ticket/<int:id>/complete/', views.complete_ticket, name='complete_ticket'),
 ]
