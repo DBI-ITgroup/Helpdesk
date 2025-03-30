@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from .models import Ticket, CustomUser
-from .forms import CustomUserRegistrationForm, CustomLoginForm, TicketForm,UserProfileUpdateForm
+from .forms import CustomUserRegistrationForm, CustomLoginForm, TicketForm, UserSettingsForm
 import uuid
 from .utils import get_least_busy_l1_technician
 
@@ -102,15 +102,16 @@ def my_tickets(request):
 @login_required
 def settings(request):
     if request.method == "POST":
-        form = UserProfileUpdateForm(request.POST, instance=request.user)
+        form = UserSettingsForm(request.POST, instance=request.user)
         if form.is_valid():
             form.save()
             messages.success(request, "Profile updated successfully!")
-            return redirect('dashboard')  # Redirect back to the dashboard after updating
+            return redirect('dashboard')  
     else:
-        form = UserProfileUpdateForm(instance=request.user)  # Prepopulate the form with user data
+        
+        form = UserSettingsForm(initial={'full_name': request.user.full_name}, instance=request.user)
     
-    return render(request, 'dashboard.html', {'form': form})
+    return render(request, 'user_settings.html', {'form': form})
 
 
 def user_logout(request):

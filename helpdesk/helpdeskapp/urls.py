@@ -12,6 +12,7 @@ urlpatterns = [
     path("admin-dashboard/", views.admin_dashboard, name="admin_dashboard"),  # Admin dashboard
     path('tickets/', views.view_tickets, name='view_tickets'),  # View all tickets
     path("technician-dashboard/", views.technician_dashboard, name="technician_dashboard"),  # Technician dashboard
+    path("user/settings/", views.settings, name="user_settings"), #user settings 
 
      # Ticket action URLs
     path('ticket/<int:id>/accept/', views.accept_ticket, name='accept_ticket'),

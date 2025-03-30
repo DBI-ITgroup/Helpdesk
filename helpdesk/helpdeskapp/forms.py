@@ -50,7 +50,7 @@ class CustomUserRegistrationForm(forms.ModelForm):
 
     def save(self, commit=True):
      user = super().save(commit=False)
-     user.username = self.cleaned_data["email"]  # Assign email as username
+     user.username = self.cleaned_data["email"]  
      user.role = "End-User"
      user.set_password(self.cleaned_data["password"])
 
@@ -74,16 +74,6 @@ class TicketForm(forms.ModelForm):
             'preferred_contact_method', 'attachment'
         ]
 
-        
-class UserProfileUpdateForm(forms.ModelForm):
-    full_name = forms.CharField(max_length=50, required=True, widget=forms.TextInput(attrs={'placeholder': 'Full Name'}))
-    email = forms.EmailField(required=True, widget=forms.EmailInput(attrs={'placeholder': 'Email Address'}))
-    password = forms.CharField(widget=forms.PasswordInput(attrs={'placeholder': 'New Password'}), required=False)
-    confirm_password = forms.CharField(widget=forms.PasswordInput(attrs={'placeholder': 'Confirm New Password'}), required=False)
-
-    class Meta:
-        model = CustomUser
-        fields = ['full_name', 'email']
 
     def clean_email(self):
         email = self.cleaned_data['email']
@@ -100,3 +90,36 @@ class UserProfileUpdateForm(forms.ModelForm):
             if password != confirm_password:
                 self.add_error('confirm_password', "Passwords do not match!")
         return cleaned_data
+
+class UserSettingsForm(forms.ModelForm):
+    full_name = forms.CharField(max_length = 50, required = True, widget = forms.TextInput(attrs = {'placeholder': 'Full Name'}))
+    new_password = forms.CharField(required = False, widget = forms.PasswordInput(attrs = {'placeholder': 'New Password'}))
+    confirm_password = forms.CharField(required = False, widget = forms.PasswordInput(attrs = {'placeholder': 'Confirm New Password'}))
+    
+    class Meta:
+        model = CustomUser
+        fields = ['full_name']
+
+    def clean(self):
+        cleaned_data = super().clean()
+        new_password = cleaned_data.get("new_password")
+        confirm_password = cleaned_data.get("confirm_password")
+
+        if new_password or confirm_password:
+            if new_password != confirm_password:
+                raise forms.ValidationError("Passwords do not match.")
+            if len(new_password) < 8:
+                raise forms.ValidationError("Password must be at least 8 characters long.")
+        
+        return cleaned_data
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.first_name, user.last_name = self.cleaned_data['full_name'].split(" ", 1) if " " in self.cleaned_data['full_name'] else (self.cleaned_data['full_name'], "")
+
+        if self.cleaned_data.get("new_password"):
+            user.set_password(self.cleaned_data["new_password"])
+
+        if commit:
+            user.save()
+        return user

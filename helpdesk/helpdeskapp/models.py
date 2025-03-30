@@ -81,7 +81,7 @@ class Ticket(models.Model):
     def assign_technician(self):
         """Automatically assign the ticket to the least busy L1 Technician."""
         if not self.assigned_technician:
-            from helpdeskapp.models import CustomUser  # Avoid circular import
+            from helpdeskapp.models import CustomUser  
 
             least_busy_technician = CustomUser.objects.filter(role="L1_Technician") \
                 .annotate(ticket_count=Count('assigned_tickets')) \
@@ -95,7 +95,7 @@ class Ticket(models.Model):
         if not self.ticket_number:
             self.ticket_number = str(uuid.uuid4())[:8].upper()
 
-        self.assign_technician()  # Assign technician if not assigned
+        self.assign_technician()  
         super().save(*args, **kwargs)
 
     def __str__(self):

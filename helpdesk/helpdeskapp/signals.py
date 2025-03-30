@@ -6,7 +6,7 @@ from .models import CustomUser, Ticket
 
 @receiver(post_save, sender=CustomUser)
 def assign_permissions(sender, instance, created, **kwargs):
-    if created:  # Assign permissions only when a user is created
+    if created:  
         content_type = ContentType.objects.get_for_model(Ticket)
 
         if instance.role == 'L1_Technician':
