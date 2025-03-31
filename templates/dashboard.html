@@ -1,18 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}Dashboard{% endblock %}
-<nav class="dashboard-menu">
-    <ul>
-        <li>
-            <a href="{% url 'logout' %}">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12h3m-3 0l-3-3m3 3l-3 3m3-3H6" />
-                </svg>
-                Logout
-            </a>
-        </li>
-    </ul>
-</nav>
+
 {% block sidebar %}
     <nav class="dashboard-menu">
         <ul>
@@ -33,13 +22,12 @@
                 </a>
             </li>
             <li>
-                <a href="{% url 'user_settings' %}" id="settings-btn" class="flex items-center gap-2 text-gray-700 hover:text-gray-900">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                <a href="#" id="settings-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v18m-6-6h12m-6-6h6" />
                     </svg>
-                    <span>Settings</span>
+                    Settings
                 </a>
-                
             </li>
             
             <li>

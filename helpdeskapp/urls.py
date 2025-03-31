@@ -9,11 +9,10 @@ urlpatterns = [
     path('add_ticket/', views.add_ticket, name='add_ticket'),  # Add a ticket
     path('my_tickets/', views.my_tickets, name='my_tickets'),  # View user's tickets
     path('logout/', views.user_logout, name='logout'),  # User logout
-    path("admin_dashboard/", views.admin_dashboard, name = 'admin_dashboard'),  # Admin dashboard
+    path("admin-dashboard/", views.admin_dashboard, name="admin_dashboard"),  # Admin dashboard
     path('tickets/', views.view_tickets, name='view_tickets'),  # View all tickets
-    path("technician-dashboard/", views.technician_dashboard, name="technician_dashboard"),  # Technician dashboard
-    path("user/settings/", views.settings, name="user_settings"), #user settings 
-    path('admin/tickets/', views.view_tickets, name='ticket_management'),
+    path("technician-dashboard/", views.technician_dashboard, name="technician_dashboard"),  # L1 Technician dashboard
+    path("l2-technician-dashboard/", views.l2_technician_dashboard, name="l2_technician_dashboard"),
 
      # Ticket action URLs
     path('ticket/<int:id>/accept/', views.accept_ticket, name='accept_ticket'),

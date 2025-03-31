@@ -4,9 +4,13 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from .models import Ticket, CustomUser
-from .forms import CustomUserRegistrationForm, CustomLoginForm, TicketForm, UserSettingsForm
+from .forms import CustomUserRegistrationForm, CustomLoginForm, TicketForm,UserProfileUpdateForm
 import uuid
 from .utils import get_least_busy_l1_technician
+from .utils import get_least_busy_l2_technician
+from django.contrib.auth.decorators import permission_required
+from django.core.exceptions import PermissionDenied
+
 
 
 User = get_user_model
@@ -102,16 +106,15 @@ def my_tickets(request):
 @login_required
 def settings(request):
     if request.method == "POST":
-        form = UserSettingsForm(request.POST, instance=request.user)
+        form = UserProfileUpdateForm(request.POST, instance=request.user)
         if form.is_valid():
             form.save()
             messages.success(request, "Profile updated successfully!")
-            return redirect('dashboard')  
+            return redirect('dashboard')  # Redirect back to the dashboard after updating
     else:
-        
-        form = UserSettingsForm(initial={'full_name': request.user.full_name}, instance=request.user)
+        form = UserProfileUpdateForm(instance=request.user)  # Prepopulate the form with user data
     
-    return render(request, 'user_settings.html', {'form': form})
+    return render(request, 'dashboard.html', {'form': form})
 
 
 def user_logout(request):
@@ -121,34 +124,50 @@ def user_logout(request):
 
 @login_required
 def admin_dashboard(request):
-    return render(request, "admin_dashboard.html")
-
+    return render(request, "admin.html")
 
 @login_required
 def view_tickets(request):
     if request.user.is_authenticated:
         if request.user.role == "L1_Technician":
+            if not request.user.has_perm("helpdeskapp.view_pending_tickets"):
+                return render(request, "base.html", {"error_message": "You do not have permission to view pending tickets."})
+
             tickets = Ticket.objects.filter(status="Pending", assigned_technician=request.user)
             return render(request, "technician_dashboard.html", {"tickets": tickets})
+
         elif request.user.role == "L2_Technician":
-            tickets = Ticket.objects.filter(status="Completed")
+            if not request.user.has_perm("helpdeskapp.view_escalated_tickets"):
+                return render(request, "base.html", {"error_message": "You do not have permission to view escalated tickets."})
+
+            tickets = Ticket.objects.filter(status="Escalated", assigned_technician=request.user)
             return render(request, "technician_dashboard.html", {"tickets": tickets})
+
         else:
-            tickets = Ticket.objects.all()  
-            return render(request, "admin_ticketmanagement.html", {"tickets": tickets})  
+            if not request.user.is_staff:
+                return render(request, "base.html", {"error_message": "Access denied!"})
+
+            tickets = Ticket.objects.all()  # Admins can see all tickets
+            return render(request, "admin.html", {"tickets": tickets})
+
+    return redirect("login")
 
 
-@login_required
+@login_required 
 def technician_dashboard(request):
-    tickets = Ticket.objects.filter(assigned_technician=request.user, status="Pending")
+    if request.user.role == "L1_Technician" : 
+        if not request.user.has_perm("helpdeskapp.view_pending_tickets"):
+            #raise PermissionDenied  # Block unauthorized access
+            return render(request, "base.html", {"error_message": "You do not have permission to view this page."})
 
-    if request.user.role == "L1_Technician":
+
         tickets = Ticket.objects.filter(assigned_technician=request.user)
-    else:
-        messages.error(request, "Unauthorized access!")
-        return redirect("dashboard")
+        return render(request, "technician_dashboard.html", {"tickets": tickets})
 
-    return render(request, "technician_dashboard.html", {"tickets": tickets})
+    #messages.error(request, "Unauthorized access!")
+    #return redirect("dashboard") 
+    return render(request, "base.html", {"error_message": "Unauthorized access!"})
+
 
 
 @login_required
@@ -157,21 +176,36 @@ def accept_ticket(request, id):
     ticket.status = "In Progress"
     ticket.save()
     return redirect("technician_dashboard")
-
+@login_required
 def request_info(request, id):
     ticket = get_object_or_404(Ticket,id=id)
     ticket.status = "Waiting for Info"
     ticket.save()
     return redirect("technician_dashboard")
-
+@login_required
 def escalate_ticket(request,id):
     ticket = get_object_or_404(Ticket, id=id)
     ticket.status = "Escalated"
     ticket.save()
     return redirect("technician_dashboard")
-
+@login_required
 def complete_ticket(request, id):
     ticket = get_object_or_404(Ticket, id=id)
     ticket.status = "Completed"
     ticket.save()
     return redirect("technician_dashboard")
+
+@login_required
+def l2_technician_dashboard(request):
+    if request.user.role == "L2_Technician":
+        # Ensure you're filtering by 'Escalated' status and assigned technician
+        escalated_tickets = Ticket.objects.filter(status="Escalated", assigned_technician=request.user)
+        
+        context = {
+            "escalated_tickets": escalated_tickets,
+        }
+        return render(request, "l2_technician_dashboard.html", context)
+    else:
+        messages.error(request, "Unauthorized access!")
+        return redirect("dashboard")
+

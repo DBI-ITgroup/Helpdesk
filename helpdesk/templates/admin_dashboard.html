@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block sidebar %}
+<nav class="dashboard-menu bg-primary text-white p-4">
+    <div class="text-center mb-4">
+        <div class="profile-placeholder rounded-circle bg-white text-primary d-flex align-items-center justify-content-center" style="width: 80px; height: 80px; font-size: 2rem; font-weight: bold;">
+            {{ request.user.first_name|first|upper }}
+        </div>
+        <p class="mt-2">{{ request.user.email }}</p>
+    </div>
+    <ul class="list-unstyled">
+        <li class="mb-3"><a href="" class="text-white">🏠 Dashboard</a></li>
+        <li><a href="{% url 'ticket_management' %}" class="text-white">🎫 Ticket Management</a></li>
+        <li class="mb-3"><a href="" class="text-white">📊 Reports & Analytics</a></li>
+        <li class="mb-3"><a href="" class="text-white">⚙️ Roles Management</a></li>
+        <li class="mb-3"><a href="" class="text-white">📜 CAB Approvals</a></li>
+        <li class="mt-4">
+            <a href="{% url 'logout' %}" class="text-white">🚪 Logout</a>
+        </li>
+    </ul>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center mb-4"></h2>
+
+    <!-- Ticket Summary -->
+    <div class="row text-center mb-4 g-4">
+        <div class="col-md-4">
+            <div class="card shadow p-4">
+                <h5>Open Tickets</h5>
+                <p class="text-primary fs-3">{{ open_tickets|default:0 }}</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow p-4">
+                <h5>Pending Tickets</h5>
+                <p class="text-warning fs-3">{{ pending_tickets|default:0 }}</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow p-4">
+                <h5>Resolved Tickets</h5>
+                <p class="text-success fs-3">{{ resolved_tickets|default:0 }}</p>
+            </div>
+        </div>
+    </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

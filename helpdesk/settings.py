@@ -151,5 +151,3 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 AUTH_USER_MODEL = 'helpdeskapp.CustomUser'
-
-LOGIN_REDIRECT_URL = "/admin_dashboard/"  # Ensure this matches your URL path
